@@ -14,10 +14,8 @@ def plothdf5(filepath):
 
     events: np.ndarray = f["CD"]["events"]
   
-    print(events)
     total_events = len(events)
     duration = (events[total_events - 1]['t'] - events[0]['t']) / 10**6
-    
+    print(events[:100])    
     print(total_events, duration)
-
 
