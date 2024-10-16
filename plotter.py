@@ -14,9 +14,14 @@ def plothdf5(filepath):
   #
   with h5py.File("./data/recording.hdf5", 'r') as hf_in:
     dset: h5py.Dataset = hf_in['CD']['events']
-
-    print(dset[0:100])
-  # with h5py.File(filepath, 'r') as f:
+    positives = [] 
+    for event in dset[ :]:
+      if event[2] == 1:
+        positives.append(True)
+      else:
+        positives.append(False)
+    
+    # with h5py.File(filepath, 'r') as f:
 
   #   events: np.ndarray = f["CD"]["events"]
   
