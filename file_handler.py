@@ -28,4 +28,14 @@ class FileHandler:
       self.handle_txt()
     else:
       raise OSError("Not a valid file type")
+ 
+  def filter_events(self, filter):
+    filter_array = []
+    for event in self.events[:10]:
+      filter_array.append(filter(event))
+    return self.events[:10][filter_array]
+  
+  def print_events(self ):
+    for event in self.events[-100:]:
+      print(event )
   
