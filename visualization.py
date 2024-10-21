@@ -1,37 +1,52 @@
 import matplotlib.pyplot as plt
-from PIL import Image, ImageDraw
 import numpy as np
 
 import file_handler
+import contrast_max as cm
 import config
 
-class Plotter:
-  def __init__(self, data: np.ndarray):
-    self.fig = plt.figure()
-    self.ax3 = self.fig.add_subplot(projection="3d")
-    self.ax2 = self.fig.add_subplot(projection="2d")
 
-    self.data = data
-  
-  def plot_events(self):
-    xs = self.data[:,0]
-    ys = self.data[:,3]
-    zs = self.data[:,1]
-    self.ax.scatter(xs, ys, zs, marker=".", s=.01)
-    plt.show()
-  
-  def plot_image(self):
-    
+class Plotter:
+
+    def plot_events(self, events, title="no title"):
+        fig = plt.figure()
+        ax = fig.add_subplot(projection="3d")
+        ax.set_title(title)
+        xs = events[:, 0]
+        ys = events[:, 3]
+        zs = events[:, 1]
+        ax.scatter(xs, ys, zs, marker=".", s=.01)
+
+    def plot_image(self, img, title='no title'):
+        fig = plt.figure()
+        ax = fig.add_subplot()
+        ax.set_title(title)
+        ax.imshow(img, vmin=-np.abs(img).max(), vmax=np.abs(img).max())
+
+    def show(self):
+        self.fig.show()
+
 
 fileHandler = file_handler.FileHandler(config.TEST_RECORDING_PATH)
-fileHandler.read_file()
+fileHandler.read_file(h=100000)
 
 events = fileHandler.events
-events = fileHandler.filter_events(lambda x : x[2] == 1)
+events = fileHandler.filter_events(lambda x: x[2] == 1)
 
-print(events)
+plotter = Plotter()
+plotter.plot_events(events[:5000])
 
-plotter = Plotter(events[:100000])
-plotter.plot_events()
+trimmed_events = cm.event_window(events, 500, 500)
+x0 = cm.get_initial_guess(0)
 
-    
+plotter.plot_events(trimmed_events, "normal")
+
+warped_events = [cm.rot_warp_pixel(event, event[3], x0)
+                 for event in trimmed_events]
+warped_img = cm.event_image(warped_events)
+img = cm.event_image(trimmed_events)
+
+plotter.plot_image(warped_img, "warped")
+plotter.plot_image(img, "normal")
+
+plt.show()
