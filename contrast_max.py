@@ -22,17 +22,21 @@ def rot_warp_pixel(e: np.ndarray, t : float, theta: np.ndarray) -> np.ndarray:
   x_bar = np.transpose(np.array([e[0], e[1], 1]))
   theta_hat = get_cross_matrix(theta)
 
-  return np.matmul(sla.expm(theta_hat * t), x_bar)
+  res = np.matmul(sla.expm(theta_hat * t), x_bar)
+  print(res)
+  return res.astype(int) 
 
-def maximize(f, events, initial_guess):
-  return scipy.optimize.minimize(f, initial_guess, args=(events))
+def minimize(f, events, initial_guess):
+  return scipy.optimize.minimize(f, initial_guess, args=(events), method="Newton-CG")
 
 def event_image(events):
-  img = np.zeros((config.IMAGE_HEIGHT, config.IMAGE_WIDTH))
+  img = np.zeros((config.IMAGE_WIDTH, config.IMAGE_HEIGHT))
   for event in events:
 # the actual formula per pixel is b_k * s(x - x_k) with s = dirac delta funciton but no
 # we can also use the gaussian with multivar normal dist with mu = x_k (and sigma = 1?)
-    img[event[0]][event[1]] += event[2] 
+    if 0 <= event[0] <= config.IMAGE_WIDTH and 0 <= event[1] <= config.IMAGE_HEIGHT: 
+      img[event[0]][event[1]] += event[2] 
+  return img
     
 def compute_variance(img):
   n_p = config.IMAGE_HEIGHT * config.IMAGE_WIDTH
