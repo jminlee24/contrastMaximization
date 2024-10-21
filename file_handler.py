@@ -31,9 +31,9 @@ class FileHandler:
  
   def filter_events(self, filter):
     filter_array = []
-    for event in self.events[:10]:
+    for event in self.events:
       filter_array.append(filter(event))
-    return self.events[:10][filter_array]
+    return self.events[filter_array]
   
   def print_events(self ):
     for event in self.events[-100:]:

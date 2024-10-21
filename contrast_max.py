@@ -21,11 +21,11 @@ def rot_warp_pixel(e: np.ndarray, t : float, theta: np.ndarray) -> np.ndarray:
   
   x_bar = np.transpose(np.array([e[0], e[1], 1]))
   theta_hat = get_cross_matrix(theta)
-
+  
   return np.matmul(sla.expm(theta_hat * t), x_bar)
 
 def maximize(f, events, initial_guess):
-  return scipy.optimize.minimize(f, initial_guess, args=(events))
+  return scipy.optimize.minimize(f, initial_guess, args=(events), method="CG")
 
 def event_image(events):
   img = np.zeros((config.IMAGE_HEIGHT, config.IMAGE_WIDTH))
