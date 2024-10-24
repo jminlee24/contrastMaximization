@@ -26,27 +26,30 @@ class Plotter:
     def show(self):
         self.fig.show()
 
+if __name__=="__main__":
 
-fileHandler = file_handler.FileHandler(config.TEST_RECORDING_PATH)
-fileHandler.read_file(h=100000)
+    fileHandler = file_handler.FileHandler(config.TEST_RECORDING_PATH)
+    fileHandler.read_file(h=100000)
 
-events = fileHandler.events
-events = fileHandler.filter_events(lambda x: x[2] == 1)
+    events = fileHandler.events
+    events = fileHandler.filter_events(lambda x: x[2] == 1)
 
-plotter = Plotter()
-plotter.plot_events(events[:5000])
+    plotter = Plotter()
+    plotter.plot_events(events[:5000])
 
-trimmed_events = cm.event_window(events, 500, 500)
-x0 = cm.get_initial_guess(0)
+    trimmed_events = cm.event_window(events, 500, 500)
+    x0 = cm.get_initial_guess(0)
 
-plotter.plot_events(trimmed_events, "normal")
+    plotter.plot_events(trimmed_events, "normal")
 
-warped_events = [cm.rot_warp_pixel(event, event[3], x0)
-                 for event in trimmed_events]
-warped_img = cm.event_image(warped_events)
-img = cm.event_image(trimmed_events)
+    warped_events = [cm.rot_warp_pixel(event, event[3], [0.0, 0.00, 0.0001])
+                    for event in trimmed_events]
+    warped_img = cm.event_image(warped_events)
+    img = cm.event_image(trimmed_events)
 
-plotter.plot_image(warped_img, "warped")
-plotter.plot_image(img, "normal")
+    plotter.plot_image(warped_img, "warped")
+    plt.gca().invert_yaxis()
+    plotter.plot_image(img, "normal")
+    plt.gca().invert_yaxis()
 
-plt.show()
+    plt.show()
