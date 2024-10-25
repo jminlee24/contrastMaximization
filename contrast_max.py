@@ -8,8 +8,8 @@ def get_translation_matrix(t: np.ndarray) -> np.ndarray:
     return np.array([
         [1, 0, t[0]],
         [0, 1, t[1]],
-        [0, 0, 0 ]
-    ])    
+        [0, 0, 1]
+    ])   
 
 def get_rotation_matrix(w: np.ndarray) -> np.ndarray:
     r = w[0]
@@ -54,9 +54,12 @@ def get_cross_matrix(omega: np.ndarray) -> np.matrix:
 def rot_warp_pixel(e: np.ndarray, t: float, theta: np.ndarray) -> np.ndarray:
 
     x_bar = np.transpose(np.array([e[0], e[1], 1]))
-    theta_hat = get_cross_matrix(theta)
+    theta_hat = get_rotation_matrix(np.multiply(theta , t))
+    trans = get_translation_matrix([config.IMAGE_WIDTH // 2, config.IMAGE_HEIGHT // 2])
 
-    res = np.matmul(sla.expm(theta_hat * t), x_bar)
+    f_mat = np.matmul(np.linalg.inv(trans), np.matmul(theta_hat, trans))
+
+    res = np.matmul(f_mat, x_bar)
     res = res.astype(int)
     return res.astype(int)
 
@@ -65,8 +68,8 @@ def vel_warp_pixel(e: np.ndarray, t:float, v: np.ndarray) -> np.ndarray:
 
     return x_bar.astype(int)
 
-def minimize(f, events, initial_guess):
-    return scipy.optimize.minimize(f, initial_guess, args=(events), method="Nelder-Mead")
+def minimize(f, events, initial_guess, method="Nelder-Mead"):
+    return scipy.optimize.minimize(f, initial_guess, args=(events), method=method)
 
 
 def event_image(events):
@@ -94,4 +97,4 @@ def event_window(events, t0, t):
 
 
 def get_initial_guess(_events):
-    return np.array([0.001, 0.00000, 0.0000]).flatten()
+    return np.array([0.00, 0.00000, 0.0000]).flatten()

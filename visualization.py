@@ -21,10 +21,10 @@ class Plotter:
         fig = plt.figure()
         ax = fig.add_subplot()
         ax.set_title(title)
-        ax.imshow(img, vmin=-np.abs(img).max(), vmax=np.abs(img).max())
+        ax.imshow(img, vmin=-np.abs(img).max(), vmax=np.abs(img).max(), cmap="gray")
 
     def show(self):
-        self.fig.show()
+        plt.show()
 
 if __name__=="__main__":
 
@@ -42,10 +42,11 @@ if __name__=="__main__":
 
     plotter.plot_events(trimmed_events, "normal")
 
-    warped_events = [cm.rot_warp_pixel(event, event[3], [0.0, 0.00, 0.0001])
+    warped_events = [cm.rot_warp_pixel(event, event[3], [0.0000001, 0.00000001, 0.0001])
                     for event in trimmed_events]
     warped_img = cm.event_image(warped_events)
     img = cm.event_image(trimmed_events)
+    print(cm.compute_variance(warped_img, img))
 
     plotter.plot_image(warped_img, "warped")
     plt.gca().invert_yaxis()

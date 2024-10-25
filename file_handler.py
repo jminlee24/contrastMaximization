@@ -3,9 +3,6 @@ import numpy as np
 import h5py
 import hdf5plugin
 
-import sys
-
-
 class FileHandler:
     def __init__(self, filepath):
         self.events: np.ndarray = []
