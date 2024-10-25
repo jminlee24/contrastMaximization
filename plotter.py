@@ -1,33 +1,26 @@
-import os
-os.environ['HDF5_PLUGIN_PATH'] = "./hdf5_ecf/"
+import matplotlib.pyplot as plt
 import numpy as np
-import h5py
-import hdf5plugin 
 
 import config
 
-def plothdf5(filepath):
-  #
-  # hdf5 file format : {
-    # CD: {events: dataset, indexes: dataset}, 
-    # EXT_TRIGGER : {events: dataset, indexes: indexes}}
-  #
-  with h5py.File("./data/recording.hdf5", 'r') as hf_in:
-    dset: h5py.Dataset = hf_in['CD']['events']
-    positives = [] 
-    for event in dset[ :]:
-      if event[2] == 1:
-        positives.append(True)
-      else:
-        positives.append(False)
-    
-    # with h5py.File(filepath, 'r') as f:
 
-  #   events: np.ndarray = f["CD"]["events"]
-  
-  #   total_events = len(events)
-  #   duration = (events[total_events - 1]['t'] - events[0]['t']) / 10**6
-  #   print(events[:100])    
-  #   print(total_events, duration)
+class Plotter:
 
+    def plot_events(self, events, title="no title"):
+        fig = plt.figure()
+        ax = fig.add_subplot(projection="3d")
+        ax.set_title(title)
+        xs = events[:, 0]
+        ys = events[:, 3]
+        zs = events[:, 1]
+        ax.scatter(xs, ys, zs, marker=".", s=.01)
 
+    def plot_image(self, img, title='no title'):
+        fig = plt.figure()
+        ax = fig.add_subplot()
+        ax.set_title(title)
+        ax.imshow(img, vmin=-np.abs(img).max(),
+                  vmax=np.abs(img).max(), cmap="gray")
+
+    def show(self):
+        plt.show()

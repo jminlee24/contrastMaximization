@@ -20,7 +20,7 @@ def single_pass(x0, events):
 
 def framework(events, d_t):
     t0 = events[0][3] + 500
-    e_window: np.ndarray = cmax.event_window(events, t0, d_t)
+    e_window: np.ndarray    = cmax.event_window(events, t0, d_t)
     e_adjusted = np.array(
         list(map(lambda x: (x[0], x[1], x[2], x[3] - t0), e_window)))
     x0 = cmax.get_initial_guess(e_adjusted)

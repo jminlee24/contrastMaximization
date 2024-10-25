@@ -1,4 +1,0 @@
-RECORDING_PATH = "./data/shapre_rotation/events.txt"
-TIME_WINDOW = 500
-IMAGE_HEIGHT = 1000
-IMAGE_WIDTH = 1000
