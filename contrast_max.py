@@ -1,100 +1,56 @@
-import numpy as np
-import scipy.optimize
-import scipy.linalg as sla
-import bisect
+import scipy
+
 import config
-
-def get_translation_matrix(t: np.ndarray) -> np.ndarray:
-    return np.array([
-        [1, 0, t[0]],
-        [0, 1, t[1]],
-        [0, 0, 1]
-    ])   
-
-def get_rotation_matrix(w: np.ndarray) -> np.ndarray:
-    r = w[0]
-    p = w[1]
-    y = w[2]
-       
-    yaw_mat = np.array([
-        [np.cos(y), -np.sin(y), 0 ],
-        [np.sin(y),  np.cos(y), 0 ],
-        [0        , 0         , 1 ]
-    ])
-
-    pitch_mat = np.array([
-        [ np.cos(p), 0,  np.sin(p)],
-        [0, 1, 0],
-        [-np.sin(p), 0 , np.cos(p)],
-    ])
-
-    roll_mat = np.array([
-       [ 1, 0, 0], 
-       [ 0, np.cos(r), -np.sin(r)], 
-       [ 0, np.sin(r),  np.cos(r)], 
-    ])
-
-    return np.matmul(yaw_mat, np.matmul(pitch_mat, roll_mat)) 
-
-def get_cross_matrix(omega: np.ndarray) -> np.matrix:
-    """ returns the skew symmetric matrix related to the cross product with omega
-        omega x b is equivalent to Ab where A is the related matrix
-    Args:
-        omega (np.ndarray): 3d np array of rotation
-
-    Returns:
-        _type_: _description_
-    """
-    return np.matrix(
-        [[0, -omega[2],  omega[1]],
-         [omega[2], 0,  -omega[0]],
-         [omega[1], omega[2], 0]])
+import warp
+import file_handler
+import plotter
 
 
-def rot_warp_pixel(e: np.ndarray, t: float, theta: np.ndarray) -> np.ndarray:
+class ContrastMaximizer:
+    def __init__(self, filepath, h=-1):
+        self.file_handler = file_handler.FileHandler(filepath)
+        self.file_handler.read_file(h=h)
+        self.filtered_events = self.file_handler.filter_events(
+            lambda x: x[2] == 1)
+        self.plotter = plotter.Plotter()
+        self.x0 = []
+        self.t0 = 0
 
-    x_bar = np.transpose(np.array([e[0], e[1], 1]))
-    theta_hat = get_rotation_matrix(np.multiply(theta , t))
-    trans = get_translation_matrix([config.IMAGE_WIDTH // 2, config.IMAGE_HEIGHT // 2])
+    @staticmethod
+    def create_image(events):
+        img = warp.event_image(events)
+        return img
 
-    f_mat = np.matmul(np.linalg.inv(trans), np.matmul(theta_hat, trans))
+    @staticmethod
+    def single_pass(x0, events):
+        warped_events = [warp.rot_warp_pixel(
+            event, event[3], x0) for event in events]
+        img = warp.event_image(warped_events)
+        return -warp.compute_variance(img, warped_events)
 
-    res = np.matmul(f_mat, x_bar)
-    res = res.astype(int)
-    return res.astype(int)
+    def maximize_variance(self, t0):
+        self.t0 = t0
+        events = warp.event_window(
+            self.filtered_events, t0, config.TIME_WINDOW)
+        x0 = warp.get_initial_guess(events)
+        res = scipy.optimize.minimize(
+            ContrastMaximizer.single_pass, x0=x0, args=events, method="Nelder-Mead", tol=.001)
 
-def vel_warp_pixel(e: np.ndarray, t:float, v: np.ndarray) -> np.ndarray:
-    x_bar = np.array(e[0], e[1]) + v
+        self.x0 = res.x
+        return res
 
-    return x_bar.astype(int)
+    def plot_images(self):
+        events = warp.event_window(
+            self.filtered_events, self.t0, config.TIME_WINDOW)
 
-def minimize(f, events, initial_guess, method="Nelder-Mead"):
-    return scipy.optimize.minimize(f, initial_guess, args=(events), method=method)
+        warped_events = [warp.rot_warp_pixel(
+            event, event[3], self.x0) for event in events]
 
+        warped_img = self.create_image(warped_events)
+        img = self.create_image(events)
 
-def event_image(events):
-    img = np.zeros((config.IMAGE_HEIGHT, config.IMAGE_WIDTH))
-    for event in events:
-        # the actual formula per pixel is b_k * s(x - x_k) with s = dirac delta funciton but no
-        # we can also use the gaussian with multivar normal dist with mu = x_k (and sigma = 1?)
-        event = event.astype(int)
-        if 0 <= event[0] < config.IMAGE_WIDTH and 0 <= event[1] < config.IMAGE_HEIGHT:
-            img[event[1]][event[0]] += event[2]
-    return img
+        self.plotter.plot_image(warped_img, title="warped events")
+        self.plotter.plot_image(img, title="original events")
+        self.plotter.plot_events(self.file_handler.events, title="events")
 
-
-def compute_variance(img, events):
-    n_p = len(events)
-    mean = 1 / n_p * np.sum(img)
-    variance = 1 / n_p * np.sum(np.multiply(img - mean, img - mean))
-    return variance
-
-
-def event_window(events, t0, t):
-    i = bisect.bisect_left(events, t + t0, key=lambda x: x[3])
-    j = bisect.bisect_right(events, t0, key=lambda x: x[3])
-    return np.array(list(map(lambda x: np.array([x[0], x[1], x[2], x[3]], dtype="float64"), events[j: i])))
-
-
-def get_initial_guess(_events):
-    return np.array([0.00, 0.00000, 0.0000]).flatten()
+        self.plotter.show()

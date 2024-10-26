@@ -13,7 +13,7 @@ class Plotter:
         xs = events[:, 0]
         ys = events[:, 3]
         zs = events[:, 1]
-        ax.scatter(xs, ys, zs, marker=".", s=.01)
+        ax.scatter(xs, ys, zs, s=.01, marker=".", )
 
     def plot_image(self, img, title='no title'):
         fig = plt.figure()
