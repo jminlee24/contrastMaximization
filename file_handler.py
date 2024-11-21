@@ -35,10 +35,9 @@ class FileHandler:
             raise OSError("Not a valid file type")
 
     def filter_events(self, filter):
-        filter_array = []
         for event in self.events:
-            filter_array.append(filter(event))
-        return self.events[filter_array]
+            filter(event)
+        return self.events
 
     def print_events(self):
         for event in self.events[-100:]:
