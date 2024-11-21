@@ -34,6 +34,8 @@ TODO :
 
 ---
 
+Good methods: Nelder-Mead, Basin Hopping
+
 ## Example Image
 
 ## ![example image](image.png)

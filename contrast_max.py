@@ -33,8 +33,10 @@ class ContrastMaximizer:
         events = warp.event_window(
             self.filtered_events, t0, config.TIME_WINDOW)
         x0 = warp.get_initial_guess(events)
+#       res = scipy.optimize.basinhopping(
+#            ContrastMaximizer.single_pass, x0 = x0, niter = 50, minimizer_kwargs = {"method": "Nelder-Mead", "args": events})
         res = scipy.optimize.minimize(
-            ContrastMaximizer.single_pass, x0=x0, args=events, method="Nelder-Mead", tol=.001)
+            ContrastMaximizer.single_pass, x0=x0, args=events, method="Nelder-Mead", tol=.0001)
 
         self.x0 = res.x
         return res
@@ -42,6 +44,7 @@ class ContrastMaximizer:
     def plot_images(self):
         events = warp.event_window(
             self.filtered_events, self.t0, config.TIME_WINDOW)
+        print(len(events))
 
         warped_events = [warp.rot_warp_pixel(
             event, event[3], self.x0) for event in events]
@@ -51,6 +54,7 @@ class ContrastMaximizer:
 
         self.plotter.plot_image(warped_img, title="warped events")
         self.plotter.plot_image(img, title="original events")
-        self.plotter.plot_events(self.file_handler.events, title="events")
+        self.plotter.plot_events(
+            self.file_handler.events, title="events", start=self.t0)
 
         self.plotter.show()

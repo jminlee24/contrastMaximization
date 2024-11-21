@@ -56,7 +56,7 @@ def get_cross_matrix(omega: np.ndarray) -> np.matrix:
 
 def rot_warp_pixel(e: np.ndarray, t: float, theta: np.ndarray) -> np.ndarray:
 
-    x_bar = np.transpose(np.array([e[0], e[1], 1]))
+    x_bar = np.transpose(np.array([e[0], e[1], 1000]))
     theta_hat = get_rotation_matrix(np.multiply(theta, t))
     trans = get_translation_matrix(
         [config.IMAGE_WIDTH // 2, config.IMAGE_HEIGHT // 2])

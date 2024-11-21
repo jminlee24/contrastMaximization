@@ -6,7 +6,7 @@ import config
 
 class Plotter:
 
-    def plot_events(self, events, title="no title"):
+    def plot_events(self, events, title="no title", start=0, end=9000):
         fig = plt.figure()
         ax = fig.add_subplot(projection="3d")
         ax.set_title(title)
@@ -19,8 +19,10 @@ class Plotter:
         fig = plt.figure()
         ax = fig.add_subplot()
         ax.set_title(title)
-        ax.imshow(img, vmin=-np.abs(img).max(),
-                  vmax=np.abs(img).max(), cmap="gray")
+        plt.gca().invert_yaxis()
+        # img = img / np.max(img)
+        img = np.clip(img, 0, 1)
+        ax.imshow(img, cmap="gray")
 
     def show(self):
         plt.show()

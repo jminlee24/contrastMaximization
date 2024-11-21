@@ -1,6 +1,7 @@
 import sys
 import argparse
 import config
+import time
 
 import contrast_max
 
@@ -19,7 +20,11 @@ if __name__ == "__main__":
     if args.time_start:
         t0 = int(args.time_start)
 
-    cm = contrast_max.ContrastMaximizer(config.TEST_RECORDING_PATH, h=h)
+    cm = contrast_max.ContrastMaximizer(config.RECORDING_PATH, h=h)
+
+    start = time.time()
     res = cm.maximize_variance(t0)
+    end = time.time()
     print(res)
+    print(f"time elapsed: {end - start}")
     cm.plot_images()
