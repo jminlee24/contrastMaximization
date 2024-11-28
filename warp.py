@@ -76,11 +76,12 @@ def vel_warp_pixel(e: np.ndarray, t: float, v: np.ndarray) -> np.ndarray:
 def event_image(events):
     img = np.zeros((config.IMAGE_HEIGHT, config.IMAGE_WIDTH))
     for event in events:
-        # the actual formula per pixel is b_k * s(x - x_k) with s = dirac delta funciton but no
+        # the actual formula per pixel is b_k * s(x - x_k) with s = dirac delta funciton but literally the same thing think/hope
+        # (also not the true dirac delta since s(x - xk) != infinity we want it to be the sum of all the points instead)
         # we can also use the gaussian with multivar normal dist with mu = x_k (and sigma = 1?)
         event = event.astype(int)
         if 0 <= event[0] < config.IMAGE_WIDTH and 0 <= event[1] < config.IMAGE_HEIGHT:
-            img[event[1]][event[0]] += event[2]
+            img[event[1]][event[0]] += 2 * event[2]
     return img
 
 
